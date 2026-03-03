@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Confirma tu correo</title>
+        <style>
+            .button {
+                background-color: #007bff;
+                color: #ffffff !important;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="font-family: Arial, sans-serif; padding: 20px">
+            <h1>Hola {{.Name}},</h1>
+            <p>Gracias por registrarte. Por favor, confirma tu cuenta de correo electrónico para poder acceder a todos nuestros servicios.</p>
+            <a href="{{.ConfirmLink}}" class="button">Confirmar Cuenta</a>
+            <p>Si no te registraste en nuestra plataforma, puedes ignorar este correo sin problema.</p>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bienvenido!</title>
+        <style>
+            .button {
+                background-color: #007bff;
+                color: #ffffff !important;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="font-family: Arial, sans-serif; padding: 20px">
+            <h1>¡Hola {{.Name}}!</h1>
+            <p>Bienvenido a nuestra plataforma. Estamos felices de que te unas a nosotros.</p>
+            <p>Tu cuenta ya está lista para usarse. Puedes acceder y empezar a disfrutar de nuestros servicios ahora mismo.</p>
+            <a href="{{.LoginLink}}" class="button">Ir a mi cuenta</a>
+        </div>
+    </body>
+</html>
