@@ -36,7 +36,7 @@ func main() {
 		return
 	}
 
-	err = db.Inicialized()
+	err = db.InitializeDatabase()
 	if err != nil {
 		fmt.Println("Error initializing database:", err)
 		return
