@@ -16,7 +16,7 @@ func GetEmailConfig() EmailConfig {
 	smtpPort := os.Getenv("SMTP_PORT")    // Puerto SMTP de Brevo
 	smtpUser := os.Getenv("SMTP_USER")    // Email de login
 	smtpPass := os.Getenv("API_KEY_SMTP") // SMTP key de dashboard
-	from := "shigatsutranslations@gmail.com"
+	from := "moisessantoshdz45@gmail.com"
 
 	return EmailConfig{
 		SMTPHost: smtpHost,
