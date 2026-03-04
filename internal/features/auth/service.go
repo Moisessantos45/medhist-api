@@ -62,26 +62,23 @@ func (a *AuthUseCase) GetSession(id uint64) (*models.Veterinarian, error) {
 }
 
 func (a *AuthUseCase) ConfirmAccount(ctx context.Context, id uint64, token string) error {
-	key := fmt.Sprintf("%d_%s", id, token)
-	exists, err := a.rd.Exists(ctx, key).Result()
-	if err != nil {
-		return fmt.Errorf("Redis error: %v", err)
-	}
 
-	if exists == 0 {
-		return fmt.Errorf("token invalid, expired or already used")
-	}
-
-	deleted, err := a.rd.Del(ctx, key).Result()
+	log.Printf("Confirming account for user ID %d with token: %s", id, token[:8]+"...")
+	deleted, err := a.rd.Del(ctx, token).Result()
 	if err != nil {
-		return fmt.Errorf("Redis delete failed: %w", err)
+		return fmt.Errorf("error de conexión con sesión: %w", err)
 	}
 
 	if deleted == 0 {
-		return fmt.Errorf("token already consumed")
+		return fmt.Errorf("el enlace ya fue utilizado o ha expirado")
 	}
 
-	return a.v.UpdateEmailConfirmed(ctx, id)
+	err = a.v.UpdateEmailConfirmed(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error al activar la cuenta en base de datos: %w", err)
+	}
+
+	return nil
 }
 
 func (a *AuthUseCase) SendPasswordReset(ctx context.Context, email string) error {

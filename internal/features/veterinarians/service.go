@@ -150,9 +150,7 @@ func (s *VeterinarianUseCase) Create(ctx context.Context, veterinarian *models.V
 
 	newVeterinarian.Token = token
 
-	cacheKey := fmt.Sprintf("%d_%s", newVeterinarian.ID, token)
-
-	err = s.rd.Set(ctx, cacheKey, token, 15*time.Minute).Err()
+	err = s.rd.Set(ctx, token, newVeterinarian.ID, 15*time.Minute).Err()
 	if err != nil {
 		return fmt.Errorf("error caching token: %w", err)
 	}
@@ -172,7 +170,7 @@ func (s *VeterinarianUseCase) Create(ctx context.Context, veterinarian *models.V
 		return err
 	}
 
-	err = pkg.SendEmail(ctx, []string{veterinarian.Email}, "Restablece tu contraseña", htmlContent)
+	err = pkg.SendEmail(ctx, []string{veterinarian.Email}, "Confirmacion de cuenta", htmlContent)
 	if err != nil {
 		return fmt.Errorf("error sending email: %w", err)
 	}
