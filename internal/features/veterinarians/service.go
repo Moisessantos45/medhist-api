@@ -111,7 +111,7 @@ func (s *VeterinarianUseCase) GetByEmail(email string) (*models.Veterinarian, er
 		return nil, fmt.Errorf("email cannot be empty")
 	}
 
-	veterinarian, err := s.repo.GetByEmail(email)
+	veterinarian, err := s.repo.GetByEmail(email, true)
 	if err != nil {
 		return nil, err
 	}
@@ -129,6 +129,11 @@ func (s *VeterinarianUseCase) Create(ctx context.Context, veterinarian *models.V
 	newVeterinarian, err := models.NewVeterinarian(veterinarian.Name, veterinarian.Email, veterinarian.Password, veterinarian.Phone, veterinarian.Website, true)
 	if err != nil {
 		return err
+	}
+
+	existingVet, err := s.repo.GetByEmail(newVeterinarian.Email, true)
+	if err == nil && existingVet != nil {
+		return fmt.Errorf("email already in use")
 	}
 
 	hashedPassword, err := pkg.HashPassword(newVeterinarian.Password)

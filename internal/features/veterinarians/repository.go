@@ -2,6 +2,8 @@ package veterinarians
 
 import (
 	"api_citas/internal/pkg/models"
+	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -35,17 +37,26 @@ func (r *PostgresRepository) GetByID(id uint64) (*models.Veterinarian, error) {
 	var veterinarian models.Veterinarian
 	err := r.db.Where("email_confirmed = ?", true).First(&veterinarian, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("veterinario no encontrado con email confirmado")
+		}
 		return nil, err
 	}
 	return &veterinarian, nil
 }
 
-func (r *PostgresRepository) GetByEmail(name string) (*models.Veterinarian, error) {
+func (r *PostgresRepository) GetByEmail(name string, emailConfirmed bool) (*models.Veterinarian, error) {
 	var veterinarian models.Veterinarian
-	err := r.db.Where("email = ?", name).Where("email_confirmed = ?", true).First(&veterinarian).Error
+	err := r.db.Where("email = ?", name).Where("email_confirmed = ?", emailConfirmed).First(&veterinarian).Error
 	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("veterinario no encontrado con email confirmado")
+		}
+
 		return nil, err
 	}
+
 	return &veterinarian, nil
 }
 
@@ -57,6 +68,11 @@ func (r *PostgresRepository) Update(id uint64, veterinarian *models.Veterinarian
 	var existingVeterinarian models.Veterinarian
 	err := r.db.Where("email_confirmed = ?", true).First(&existingVeterinarian, id).Error
 	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("veterinario no encontrado con email confirmado")
+		}
+
 		return err
 	}
 
