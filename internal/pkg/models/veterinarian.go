@@ -34,7 +34,7 @@ type PaginatedVeterinarians struct {
 type VeterinarianRepository interface {
 	GetAll(offset int, limit int) ([]Veterinarian, int64, error)
 	GetByID(id uint64) (*Veterinarian, error)
-	GetByEmail(email string) (*Veterinarian, error)
+	GetByEmail(email string, emailConfirmed bool) (*Veterinarian, error)
 	Create(veterinarian *Veterinarian) error
 	Update(id uint64, veterinarian *Veterinarian) error
 	UpdatePassword(id uint64, newPassword string) error

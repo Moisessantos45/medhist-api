@@ -170,6 +170,11 @@ func (s *PatientUseCase) Create(ctx context.Context, p *models.Patient) error {
 		return err
 	}
 
+	existingPatient, err := s.repo.GetByOwnerEmail(newPatient.OwnerEmail)
+	if err == nil && existingPatient != nil {
+		return fmt.Errorf("a patient with the email %s already exists", newPatient.OwnerEmail)
+	}
+
 	err = s.repo.Create(newPatient)
 	if err != nil {
 		return err

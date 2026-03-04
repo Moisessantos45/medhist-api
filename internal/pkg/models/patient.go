@@ -59,6 +59,7 @@ type PatientRepository interface {
 	GetAll(offset int, limit int) ([]Patient, int64, error)
 	GetAllByVeterinarianID(veterinarianID uint64, offset int, limit int) ([]Patient, int64, error)
 	GetByID(id uint64) (*Patient, error)
+	GetByOwnerEmail(ownerEmail string) (*Patient, error)
 	Create(patient *Patient) error
 	Update(id uint64, patient *Patient) error
 	UpdateStatus(id uint64, status string) error

@@ -57,6 +57,16 @@ func (r *PostgresRepository) GetByID(id uint64) (*models.Patient, error) {
 	return &patient, nil
 }
 
+func (r *PostgresRepository) GetByOwnerEmail(ownerEmail string) (*models.Patient, error) {
+	var patient models.Patient
+	err := r.db.Where("owner_email = ?", ownerEmail).First(&patient).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &patient, nil
+}
+
 func (r *PostgresRepository) Create(patient *models.Patient) error {
 	return r.db.Create(patient).Error
 }
