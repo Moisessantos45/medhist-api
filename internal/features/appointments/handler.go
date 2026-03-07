@@ -4,6 +4,7 @@ import (
 	"api_citas/internal/pkg"
 	"api_citas/internal/pkg/models"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -79,6 +80,10 @@ func (h *AppointmentHandler) Create(c *gin.Context) {
 
 	err := h.s.Create(c, &input)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrada") {
+			c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -102,6 +107,10 @@ func (h *AppointmentHandler) Update(c *gin.Context) {
 
 	err = h.s.Update(c, id, &input)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrada") {
+			c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}

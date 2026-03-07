@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -100,6 +101,9 @@ func (r *AppointmentUseCase) Create(ctx context.Context, a *models.Appointment) 
 
 	err = r.repo.Create(newAppointment)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("la cita ya se encuentra registrada")
+		}
 		return err
 	}
 
@@ -134,6 +138,9 @@ func (r *AppointmentUseCase) Update(ctx context.Context, id uint64, a *models.Ap
 
 	err = r.repo.Update(id, updatedAppointment)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("la cita ya se encuentra registrada")
+		}
 		return err
 	}
 
