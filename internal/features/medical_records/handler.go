@@ -5,6 +5,7 @@ import (
 	"api_citas/internal/pkg/models"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -68,7 +69,7 @@ func (h *MedicalRecordHandler) Create(c *gin.Context) {
 	var req models.MedicalRecord
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Printf("❌ BIND ERROR: %v", err)
+		log.Printf("BIND ERROR: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
@@ -80,6 +81,10 @@ func (h *MedicalRecordHandler) Create(c *gin.Context) {
 
 	err := h.s.Create(c, &req)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrado") {
+			c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -105,6 +110,10 @@ func (h *MedicalRecordHandler) Update(c *gin.Context) {
 
 	err = h.s.Update(c, id, &req)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrado") {
+			c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}

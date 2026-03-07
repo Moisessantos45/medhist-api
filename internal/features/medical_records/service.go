@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -102,6 +103,9 @@ func (s *MedicalRecordUseCase) Create(ctx context.Context, mr *models.MedicalRec
 
 	err = s.repo.Create(newMR)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("el registro médico ya se encuentra registrado")
+		}
 		return err
 	}
 
@@ -144,6 +148,9 @@ func (s *MedicalRecordUseCase) Update(ctx context.Context, id uint64, mr *models
 
 	err = s.repo.Update(id, updatedMR)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("el registro médico ya se encuentra registrado")
+		}
 		return err
 	}
 
