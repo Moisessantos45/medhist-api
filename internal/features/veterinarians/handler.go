@@ -4,6 +4,7 @@ import (
 	"api_citas/internal/pkg"
 	"api_citas/internal/pkg/models"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -104,6 +105,12 @@ func (h *VeterinarianHandler) Create(c *gin.Context) {
 
 	err := h.s.Create(c, &veterinarian)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrado") {
+			c.JSON(http.StatusConflict, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
@@ -111,7 +118,8 @@ func (h *VeterinarianHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"data": veterinarian,
+		"data":    veterinarian,
+		"message": "Veterinarian created successfully",
 	})
 }
 
@@ -135,6 +143,12 @@ func (h *VeterinarianHandler) Update(c *gin.Context) {
 
 	err = h.s.Update(id, &veterinarian)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrado") {
+			c.JSON(http.StatusConflict, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})

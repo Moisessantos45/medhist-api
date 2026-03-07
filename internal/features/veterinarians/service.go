@@ -133,7 +133,7 @@ func (s *VeterinarianUseCase) Create(ctx context.Context, veterinarian *models.V
 
 	existingVet, err := s.repo.GetByEmail(newVeterinarian.Email, true)
 	if err == nil && existingVet != nil {
-		return fmt.Errorf("email already in use")
+		return fmt.Errorf("el correo electrónico ya se encuentra registrado")
 	}
 
 	hashedPassword, err := pkg.HashPassword(newVeterinarian.Password)
@@ -145,6 +145,9 @@ func (s *VeterinarianUseCase) Create(ctx context.Context, veterinarian *models.V
 
 	err = s.repo.Create(newVeterinarian)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("el correo electrónico ya se encuentra registrado")
+		}
 		return err
 	}
 
@@ -195,6 +198,9 @@ func (s *VeterinarianUseCase) Update(id uint64, veterinarian *models.Veterinaria
 
 	err = s.repo.Update(id, newVeterinarian)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("el correo electrónico ya se encuentra registrado")
+		}
 		return err
 	}
 	return nil
