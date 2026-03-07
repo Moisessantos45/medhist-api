@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -96,6 +97,9 @@ func (s *VaccinationUseCase) Create(ctx context.Context, v *models.Vaccination) 
 
 	err = s.repo.Create(newVaccination)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("la vacuna ya se encuentra registrada")
+		}
 		return fmt.Errorf("error creating vaccination: %w", err)
 	}
 
@@ -130,6 +134,9 @@ func (s *VaccinationUseCase) Update(ctx context.Context, id uint64, v *models.Va
 
 	err = s.repo.Update(id, newVaccination)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("la vacuna ya se encuentra registrada")
+		}
 		return fmt.Errorf("error updating vaccination: %w", err)
 	}
 
