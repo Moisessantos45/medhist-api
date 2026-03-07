@@ -5,6 +5,7 @@ import (
 	"api_citas/internal/pkg/models"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -90,6 +91,10 @@ func (h *PatientHandler) Create(c *gin.Context) {
 
 	err := h.s.Create(c, &patient)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrado") {
+			c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -114,6 +119,10 @@ func (h *PatientHandler) Update(c *gin.Context) {
 
 	err = h.s.Update(c, id, &patient)
 	if err != nil {
+		if strings.Contains(err.Error(), "ya se encuentra registrado") {
+			c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -172,11 +173,14 @@ func (s *PatientUseCase) Create(ctx context.Context, p *models.Patient) error {
 
 	existingPatient, err := s.repo.GetByOwnerEmail(newPatient.OwnerEmail)
 	if err == nil && existingPatient != nil {
-		return fmt.Errorf("a patient with the email %s already exists", newPatient.OwnerEmail)
+		return fmt.Errorf("el correo electrónico ya se encuentra registrado")
 	}
 
 	err = s.repo.Create(newPatient)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("el correo electrónico ya se encuentra registrado")
+		}
 		return err
 	}
 
@@ -216,6 +220,9 @@ func (s *PatientUseCase) Update(ctx context.Context, id uint64, p *models.Patien
 
 	err = s.repo.Update(id, updatedPatient)
 	if err != nil {
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate key value") {
+			return fmt.Errorf("el correo electrónico ya se encuentra registrado")
+		}
 		return err
 	}
 
