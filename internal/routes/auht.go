@@ -22,6 +22,7 @@ func AuthRoutes(rg *gin.RouterGroup) {
 
 	rg.POST("/login", authHandler.Login)
 	rg.POST("/forgot-password", authHandler.SendResetPasswordEmail)
+	rg.POST("/forward-email-verification", authHandler.ForwardEmailVerification)
 
 	protected := rg.Group("/")
 	protected.Use(middleware.AuthMiddleware(maker, rd))
