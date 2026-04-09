@@ -1,9 +1,11 @@
 package veterinarians
 
 import (
+	"api_citas/internal/pkg/errorsx"
 	"api_citas/internal/pkg/models"
 	"errors"
 	"fmt"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -47,7 +49,7 @@ func (r *PostgresRepository) GetByID(id uint64) (*models.Veterinarian, error) {
 
 func (r *PostgresRepository) GetByEmail(name string, emailConfirmed bool) (*models.Veterinarian, error) {
 	var veterinarian models.Veterinarian
-	err := r.db.Where("email = ?", name).Where("email_confirmed = ?", emailConfirmed).First(&veterinarian).Error
+	err := r.db.Where("email = ?", name).First(&veterinarian).Error
 	if err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -58,6 +60,22 @@ func (r *PostgresRepository) GetByEmail(name string, emailConfirmed bool) (*mode
 	}
 
 	return &veterinarian, nil
+}
+
+func (r *PostgresRepository) GetActiveUserByEmail(email string) (*models.Veterinarian, error) {
+	var user models.Veterinarian
+	err := r.db.Where("email = ?", email).First(&user).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user.EmailConfirmed == false {
+		log.Printf("Intento de inicio de sesión con email no verificado: %s", email)
+		return nil, errorsx.ErrCodeEmailNotVerified
+	}
+
+	return &user, nil
 }
 
 func (r *PostgresRepository) Create(veterinarian *models.Veterinarian) error {

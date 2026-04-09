@@ -119,6 +119,10 @@ func (s *VeterinarianUseCase) GetByEmail(email string) (*models.Veterinarian, er
 	return veterinarian, nil
 }
 
+func (s *VeterinarianUseCase) GetActiveUserByEmail(email string) (*models.Veterinarian, error) {
+	return s.repo.GetActiveUserByEmail(email)
+}
+
 func (s *VeterinarianUseCase) Create(ctx context.Context, veterinarian *models.Veterinarian) error {
 	isProduction := os.Getenv("GO_ENV")
 	var host = os.Getenv("HOST_URL_PROD")
