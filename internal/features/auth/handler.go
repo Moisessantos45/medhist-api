@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"api_citas/internal/pkg/errorsx"
+	"errors"
 	"log"
 	"net/http"
 
@@ -28,7 +30,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	veterinarian, err := h.a.Login(c, input.Email, input.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+		if errors.Is(err, errorsx.ErrCodeEmailNotVerified) {
+			c.JSON(403, gin.H{
+				"message": "Correo no verificado",
+				"code":    "EMAIL_NOT_VERIFIED",
+			})
+			return
+		}
+
+		c.JSON(401, gin.H{"message": "Invalid email or password"})
 		return
 	}
 
@@ -58,6 +68,27 @@ func (h *AuthHandler) ConfirmAccount(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Account confirmed successfully"})
+}
+
+func (h *AuthHandler) ForwardEmailVerification(c *gin.Context) {
+	ctx := c.Request.Context()
+	type ForwardEmailRequest struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+
+	var req ForwardEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"message": "Invalid request: " + err.Error()})
+		return
+	}
+
+	err := h.a.ForwardEmailVerification(ctx, req.Email)
+	if err != nil {
+		c.JSON(500, gin.H{"message": "Error forwarding email: " + err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Verification email forwarded successfully"})
 }
 
 func (h *AuthHandler) SendResetPasswordEmail(c *gin.Context) {

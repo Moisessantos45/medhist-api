@@ -2,9 +2,11 @@ package auth
 
 import (
 	"api_citas/internal/pkg"
+	"api_citas/internal/pkg/errorsx"
 	"api_citas/internal/pkg/models"
 	"api_citas/internal/templates"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -24,9 +26,15 @@ func NewAuthUseCase(v models.VeterinarianUseCase, rd *redis.Client, mk *pkg.Pase
 }
 
 func (a *AuthUseCase) Login(ctx context.Context, email string, password string) (*models.Veterinarian, error) {
-	veterinarian, err := a.v.GetByEmail(email)
+	veterinarian, err := a.v.GetActiveUserByEmail(email)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, errorsx.ErrCodeEmailNotVerified) {
+			log.Printf("Intento de inicio de sesión con email no verificado: %s", email)
+			return nil, errorsx.ErrCodeEmailNotVerified
+		}
+
+		log.Printf("Error fetching user by email: %v", err)
+		return nil, fmt.Errorf("No se encontro email")
 	}
 
 	if !pkg.CheckPasswordHash(password, veterinarian.Password) {
@@ -126,6 +134,59 @@ func (a *AuthUseCase) SendPasswordReset(ctx context.Context, email string) error
 	err = pkg.SendEmail(ctx, []string{email}, "Restablece tu contraseña", htmlContent)
 
 	return err
+}
+
+func (a *AuthUseCase) ForwardEmailVerification(ctx context.Context, email string) error {
+	if email == "" || len(email) <= 10 || !pkg.EmailRegex.MatchString(email) {
+		return fmt.Errorf("email inválido: %s", email)
+	}
+
+	user, err := a.v.GetByEmail(email)
+	if err != nil {
+		return fmt.Errorf("No se encontro email")
+	}
+
+	if user.EmailConfirmed {
+		return fmt.Errorf("El correo electrónico ya ha sido confirmado")
+	}
+
+	isProduction := os.Getenv("GO_ENV")
+	var host = os.Getenv("HOST_URL_PROD")
+	if isProduction == "dev" {
+		host = os.Getenv("HOST_URL_DEV")
+	}
+
+	token, err := a.marker.NewToken(fmt.Sprintf("%d", user.ID), 15*time.Minute)
+	if err != nil {
+		return err
+	}
+
+	err = a.rd.Set(ctx, token, user.ID, 15*time.Minute).Err()
+	if err != nil {
+		return fmt.Errorf("error caching token: %w", err)
+	}
+
+	renderer, err := templates.NewEmailRenderer()
+	if err != nil {
+		return err
+	}
+
+	data := templates.ConfirmAccountData{
+		Name:        user.Name,
+		ConfirmLink: fmt.Sprintf("%s/confirm/%s", host, token),
+	}
+
+	htmlContent, err := renderer.RenderConfirmAccount(data)
+	if err != nil {
+		return err
+	}
+
+	err = pkg.SendEmail(ctx, []string{email}, "Confirmacion de cuenta", htmlContent)
+	if err != nil {
+		return fmt.Errorf("No se pudo enviar el correo electrónico de confirmación: %w", err)
+	}
+
+	return nil
 }
 
 func (a *AuthUseCase) ChangePassword(ctx context.Context, id uint64, currentPassword string, newPassword string) error {
