@@ -35,6 +35,7 @@ type VeterinarianRepository interface {
 	GetAll(offset int, limit int) ([]Veterinarian, int64, error)
 	GetByID(id uint64) (*Veterinarian, error)
 	GetByEmail(email string, emailConfirmed bool) (*Veterinarian, error)
+	GetActiveUserByEmail(email string) (*Veterinarian, error)
 	Create(veterinarian *Veterinarian) error
 	Update(id uint64, veterinarian *Veterinarian) error
 	UpdatePassword(id uint64, newPassword string) error
@@ -47,6 +48,7 @@ type VeterinarianUseCase interface {
 	GetAll(ctx context.Context, page int, pageSize int) (*PaginatedVeterinarians, error)
 	GetByID(id uint64) (*Veterinarian, error)
 	GetByEmail(email string) (*Veterinarian, error)
+	GetActiveUserByEmail(email string) (*Veterinarian, error)
 	Create(ctx context.Context, veterinarian *Veterinarian) error
 	Update(id uint64, veterinarian *Veterinarian) error
 	ChangePassword(id uint64, currentPassword string, newPassword string) error
